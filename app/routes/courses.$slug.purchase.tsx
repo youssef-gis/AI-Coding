@@ -1,3 +1,4 @@
+import { CourseRating } from "~/components/course-rating";
 import { Link, useFetcher, redirect, useSearchParams } from "react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -219,6 +220,7 @@ export default function PurchaseConfirmation({
             {/* Course info */}
             <div className="flex-1">
               <h2 className="mb-1 text-xl font-semibold">{course.title}</h2>
+              <CourseRating averageRating={course.averageRating} ratingCount={course.ratingCount} />
               <p className="mb-4 text-sm text-muted-foreground">
                 {course.description}
               </p>

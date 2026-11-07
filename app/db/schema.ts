@@ -1,4 +1,12 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  text,
+  integer,
+  real,
+  uniqueIndex,
+  check,
+} from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 
 export enum UserRole {
   Student = "student",
@@ -73,6 +81,33 @@ export const courses = sqliteTable("courses", {
     .notNull()
     .$defaultFn(() => new Date().toISOString()),
 });
+
+export const courseRatings = sqliteTable(
+  "course_ratings",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    courseId: integer("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    rating: integer("rating").notNull(),
+    updatedAt: text("updated_at")
+      .notNull()
+      .$defaultFn(() => new Date().toISOString()),
+  },
+  (table) => [
+    uniqueIndex("course_ratings_course_user_unique").on(
+      table.courseId,
+      table.userId
+    ),
+    check(
+      "course_ratings_rating_range",
+      sql`${table.rating} BETWEEN 1 AND 5 AND typeof(${table.rating}) = 'integer'`
+    ),
+  ]
+);
 
 export const modules = sqliteTable("modules", {
   id: integer("id").primaryKey({ autoIncrement: true }),

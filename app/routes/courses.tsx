@@ -1,3 +1,4 @@
+import { CourseRating } from "~/components/course-rating";
 import { Form, Link, useSearchParams, useNavigation, isRouteErrorResponse } from "react-router";
 import type { Route } from "./+types/courses";
 import { buildCourseQuery, getLessonCountForCourse } from "~/services/courseService";
@@ -204,6 +205,7 @@ export default function CourseCatalog({ loaderData }: Route.ComponentProps) {
                   <h3 className="text-lg font-semibold leading-tight group-hover:text-primary">
                     {course.title}
                   </h3>
+                  <CourseRating averageRating={course.averageRating} ratingCount={course.ratingCount} />
                 </CardHeader>
                 <CardContent>
                   <p className="line-clamp-2 text-sm text-muted-foreground">

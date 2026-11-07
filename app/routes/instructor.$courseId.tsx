@@ -1,3 +1,4 @@
+import { CourseRating } from "~/components/course-rating";
 import { useState, useRef, useEffect } from "react";
 import { Link, useFetcher } from "react-router";
 import { toast } from "sonner";
@@ -1150,6 +1151,7 @@ export default function InstructorCourseEditor({
       {/* Course Header with inline editing */}
       <div className="mb-8">
         <InlineEditableTitle value={course.title} courseId={course.id} />
+              <CourseRating averageRating={course.averageRating} ratingCount={course.ratingCount} />
         <div className="mt-2">
           <InlineEditableDescription
             value={course.description}

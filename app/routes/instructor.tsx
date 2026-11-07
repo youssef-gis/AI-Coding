@@ -1,3 +1,4 @@
+import { CourseRating } from "~/components/course-rating";
 import { Link } from "react-router";
 import type { Route } from "./+types/instructor";
 import { getCoursesByInstructor, getLessonCountForCourse } from "~/services/courseService";
@@ -43,6 +44,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     const enrollmentCount = getEnrollmentCountForCourse(course.id);
 
     return {
+      averageRating: course.averageRating,
+      ratingCount: course.ratingCount,
       id: course.id,
       title: course.title,
       slug: course.slug,
@@ -187,6 +190,7 @@ export default function InstructorDashboard({
                 <p className="line-clamp-2 text-sm text-muted-foreground">
                   {course.description}
                 </p>
+                <CourseRating averageRating={course.averageRating} ratingCount={course.ratingCount} />
               </CardHeader>
               <CardContent className="flex-1">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">

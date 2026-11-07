@@ -1,3 +1,5 @@
+import { getTableColumns } from "drizzle-orm";
+import { courseRatingFields } from "./ratingService";
 import { eq, like, and, or, sql } from "drizzle-orm";
 import { db } from "~/db";
 import {
@@ -14,20 +16,31 @@ import {
 // Uses positional parameters (project convention).
 
 export function getAllCourses() {
-  return db.select().from(courses).all();
+  return db
+    .select({ ...getTableColumns(courses), ...courseRatingFields })
+    .from(courses)
+    .all();
 }
 
 export function getCourseById(id: number) {
-  return db.select().from(courses).where(eq(courses.id, id)).get();
+  return db
+    .select({ ...getTableColumns(courses), ...courseRatingFields })
+    .from(courses)
+    .where(eq(courses.id, id))
+    .get();
 }
 
 export function getCourseBySlug(slug: string) {
-  return db.select().from(courses).where(eq(courses.slug, slug)).get();
+  return db
+    .select({ ...getTableColumns(courses), ...courseRatingFields })
+    .from(courses)
+    .where(eq(courses.slug, slug))
+    .get();
 }
 
 export function getCoursesByInstructor(instructorId: number) {
   return db
-    .select()
+    .select({ ...getTableColumns(courses), ...courseRatingFields })
     .from(courses)
     .where(eq(courses.instructorId, instructorId))
     .all();
@@ -35,14 +48,18 @@ export function getCoursesByInstructor(instructorId: number) {
 
 export function getCoursesByCategory(categoryId: number) {
   return db
-    .select()
+    .select({ ...getTableColumns(courses), ...courseRatingFields })
     .from(courses)
     .where(eq(courses.categoryId, categoryId))
     .all();
 }
 
 export function getCoursesByStatus(status: CourseStatus) {
-  return db.select().from(courses).where(eq(courses.status, status)).all();
+  return db
+    .select({ ...getTableColumns(courses), ...courseRatingFields })
+    .from(courses)
+    .where(eq(courses.status, status))
+    .all();
 }
 
 export function getPublishedCourses() {
@@ -72,6 +89,7 @@ export function buildCourseQuery(
 
   const query = db
     .select({
+      ...courseRatingFields,
       id: courses.id,
       title: courses.title,
       slug: courses.slug,
@@ -113,6 +131,7 @@ export function buildCourseQuery(
 export function getCourseWithDetails(id: number) {
   const course = db
     .select({
+      ...courseRatingFields,
       id: courses.id,
       title: courses.title,
       slug: courses.slug,

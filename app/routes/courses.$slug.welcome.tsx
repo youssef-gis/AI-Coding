@@ -1,3 +1,4 @@
+import { CourseRating } from "~/components/course-rating";
 import { Link, redirect } from "react-router";
 import type { Route } from "./+types/courses.$slug.welcome";
 import { getCourseBySlug, getCourseWithDetails } from "~/services/courseService";
@@ -65,6 +66,7 @@ export default function Welcome({ loaderData }: Route.ComponentProps) {
           <h1 className="mb-2 text-3xl font-bold">
             Welcome to {course.title}!
           </h1>
+              <CourseRating averageRating={course.averageRating} ratingCount={course.ratingCount} />
           <p className="mb-8 text-lg text-muted-foreground">
             You&apos;re officially enrolled. Here&apos;s how to get started.
           </p>

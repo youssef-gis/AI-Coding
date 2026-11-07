@@ -1,3 +1,4 @@
+import { courseRatingFields } from "./ratingService";
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "~/db";
 import {
@@ -124,6 +125,7 @@ export function markEnrollmentComplete(userId: number, courseId: number) {
 export function getUserEnrolledCourses(userId: number) {
   return db
     .select({
+      ...courseRatingFields,
       enrollmentId: enrollments.id,
       courseId: enrollments.courseId,
       enrolledAt: enrollments.enrolledAt,

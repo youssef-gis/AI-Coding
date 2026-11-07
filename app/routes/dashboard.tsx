@@ -1,3 +1,4 @@
+import { CourseRating } from "~/components/course-rating";
 import { Link } from "react-router";
 import type { Route } from "./+types/dashboard";
 import { getUserEnrolledCourses } from "~/services/enrollmentService";
@@ -160,6 +161,7 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
                       <p className="line-clamp-2 text-sm text-muted-foreground">
                         {course.courseDescription}
                       </p>
+                      <CourseRating averageRating={course.averageRating} ratingCount={course.ratingCount} />
                     </CardHeader>
                     <CardContent className="flex-1">
                       <div className="mb-2 flex items-center justify-between text-sm">
@@ -232,6 +234,7 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
                       <p className="line-clamp-2 text-sm text-muted-foreground">
                         {course.courseDescription}
                       </p>
+                      <CourseRating averageRating={course.averageRating} ratingCount={course.ratingCount} />
                     </CardHeader>
                     <CardContent className="flex-1">
                       <div className="flex items-center gap-2 text-sm text-green-600">

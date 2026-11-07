@@ -1,3 +1,6 @@
+import { CourseRating } from "~/components/course-rating";
+import { CourseRatingForm } from "~/components/course-rating-form";
+import { canRateCourse, getUserCourseRating, saveCourseRating } from "~/services/ratingService";
 import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -103,6 +106,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const tierInfo = getCountryTierInfo(country);
 
   return {
+    canRate: currentUserId ? canRateCourse(currentUserId, course.id) : false,
+    userRating: currentUserId ? getUserCourseRating(currentUserId, course.id)?.rating ?? null : null,
     course: courseWithDetails,
     salesCopyHtml,
     lessonCount,
@@ -116,7 +121,21 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   };
 }
 
-// No action — enrollment is handled via the purchase confirmation page
+export async function action({ params, request }: Route.ActionArgs) {
+  const userId = await getCurrentUserId(request);
+  if (!userId) return data({ error: "Sign in to rate this course." }, { status: 401 });
+  const course = getCourseBySlug(params.slug);
+  if (!course) return data({ error: "Course not found." }, { status: 404 });
+  const form = await request.formData();
+  if (form.get("intent") !== "rate-course" || !/^[1-5]$/.test(String(form.get("rating")))) {
+    return data({ error: "Choose a whole-star rating from 1 to 5." }, { status: 400 });
+  }
+  if (!canRateCourse(userId, course.id)) {
+    return data({ error: "Only enrolled students can rate this course." }, { status: 403 });
+  }
+  saveCourseRating(userId, course.id, Number(form.get("rating")));
+  return { success: true };
+}
 
 export function HydrateFallback() {
   return (
@@ -172,6 +191,8 @@ export function HydrateFallback() {
 export default function CourseDetail({ loaderData }: Route.ComponentProps) {
   const {
     course,
+    canRate,
+    userRating,
     salesCopyHtml,
     lessonCount,
     enrolled,
@@ -298,10 +319,11 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
             </Link>
           )}
         </div>
-        <p className="mb-4 text-lg text-muted-foreground">
+        <CourseRating averageRating={course.averageRating} ratingCount={course.ratingCount} />
+        <p className="mb-4 mt-4 text-lg text-muted-foreground">
           {course.description}
         </p>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <UserAvatar
               name={course.instructorName}
@@ -326,7 +348,7 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
       {/* Two-column: sales copy left, sidebar right */}
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Left column: sales copy + course content */}
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           {salesCopyHtml ? (
             <div
               className="prose prose-neutral dark:prose-invert max-w-none"
@@ -360,7 +382,7 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
         </div>
 
         {/* Right column: progress/enrollment card */}
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <Card className="sticky top-6">
             <CardHeader>
               <h2 className="text-lg font-semibold">
@@ -416,6 +438,13 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
                 </>
               ) : (
                 enrollButton
+              )}
+              {canRate && (
+                <CourseRatingForm
+                  key={`${course.id}-${currentUserId}`}
+                  slug={course.slug}
+                  rating={userRating}
+                />
               )}
               <div className="space-y-2 pt-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">

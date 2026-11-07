@@ -1,3 +1,4 @@
+import { CourseRating } from "~/components/course-rating";
 import { useEffect } from "react";
 import { useFetcher } from "react-router";
 import { toast } from "sonner";
@@ -135,6 +136,8 @@ function CourseRow({
     createdAt: string;
     lessonCount: number;
     enrollmentCount: number;
+    averageRating: number | null;
+    ratingCount: number;
   };
 }) {
   const statusFetcher = useFetcher();
@@ -169,6 +172,7 @@ function CourseRow({
             {course.title}
           </Link>
           <p className="text-xs text-muted-foreground">{course.slug}</p>
+          <CourseRating averageRating={course.averageRating} ratingCount={course.ratingCount} />
         </div>
       </td>
       <td className="px-4 py-3">

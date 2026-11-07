@@ -1,3 +1,4 @@
+import { CourseRating } from "~/components/course-rating";
 import { useState } from "react";
 import { Link } from "react-router";
 import type { Route } from "./+types/team";
@@ -15,6 +16,8 @@ interface CourseStats {
   courseId: number;
   courseTitle: string;
   courseSlug: string;
+  averageRating: number | null;
+  ratingCount: number;
   totalSeats: number;
   claimedSeats: number;
 }
@@ -59,6 +62,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       courseId: number;
       courseTitle: string;
       courseSlug: string;
+      averageRating: number | null;
+      ratingCount: number;
       total: number;
       claimed: number;
     }
@@ -71,6 +76,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         courseId: coupon.courseId,
         courseTitle: course?.title ?? "Unknown Course",
         courseSlug: course?.slug ?? "",
+        averageRating: course?.averageRating ?? null,
+        ratingCount: course?.ratingCount ?? 0,
         total: 0,
         claimed: 0,
       });
@@ -87,6 +94,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       courseId: e.courseId,
       courseTitle: e.courseTitle,
       courseSlug: e.courseSlug,
+      averageRating: e.averageRating,
+      ratingCount: e.ratingCount,
       totalSeats: e.total,
       claimedSeats: e.claimed,
     })
@@ -181,6 +190,7 @@ export default function Team({ loaderData }: Route.ComponentProps) {
                   <BookOpen className="size-4 text-muted-foreground" />
                   <h3 className="font-semibold truncate">{stat.courseTitle}</h3>
                 </div>
+                  <CourseRating averageRating={stat.averageRating} ratingCount={stat.ratingCount} />
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">

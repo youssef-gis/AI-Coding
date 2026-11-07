@@ -1,3 +1,4 @@
+import { CourseRating } from "~/components/course-rating";
 import { Link } from "react-router";
 import { useState, useEffect } from "react";
 import type { Route } from "./+types/home";
@@ -181,6 +182,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                     <h3 className="font-semibold leading-snug group-hover:text-primary">
                       {course.title}
                     </h3>
+                    <CourseRating averageRating={course.averageRating} ratingCount={course.ratingCount} />
                   </CardHeader>
                   <CardContent>
                     <p className="line-clamp-2 text-sm text-muted-foreground">
