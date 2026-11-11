@@ -5,6 +5,8 @@ import { getUserById } from "~/services/userService";
 import {
   getAdminAnalyticsSummary,
   getAdminRevenueTimeSeries,
+  getAdminPerCourseBreakdown,
+  getInstructorsWithCourses,
 } from "~/services/analyticsService";
 import { loader } from "./admin.analytics";
 
@@ -82,6 +84,31 @@ describe("admin analytics loader", () => {
     expect(getAdminRevenueTimeSeries).toHaveBeenCalledWith({ period: "7d" });
     expect(result.timeSeries).toEqual(series);
   });
+
+  it("filters courses server-side while keeping summary totals platform-wide", async () => {
+    const instructors = [{ id: 42, name: "Course Owner" }];
+    vi.mocked(getInstructorsWithCourses).mockReturnValueOnce(instructors);
+    const result = await load("?period=12m&instructor=42");
+    expect(getAdminPerCourseBreakdown).toHaveBeenCalledWith({
+      period: "12m",
+      instructorId: 42,
+    });
+    expect(getAdminAnalyticsSummary).toHaveBeenCalledWith({ period: "12m" });
+    expect(result.selectedInstructorId).toBe(42);
+    expect(result.instructors).toEqual(instructors);
+  });
+
+  it.each(["", "all", "invalid", "0", "-1", "1.5", "Infinity"])(
+    "defaults to all instructors for %s",
+    async (instructor) => {
+      const result = await load(`?instructor=${instructor}`);
+      expect(getAdminPerCourseBreakdown).toHaveBeenCalledWith({
+        period: "30d",
+        instructorId: undefined,
+      });
+      expect(result.selectedInstructorId).toBeNull();
+    }
+  );
 
   it.each(["7d", "30d", "12m", "all"])(
     "loads the selected %s summary for admins",

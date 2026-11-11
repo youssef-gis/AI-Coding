@@ -97,14 +97,17 @@ export async function loader({ request }: Route.LoaderArgs) {
     : "30d";
 
   const instructorParam = url.searchParams.get("instructor");
-  const instructorId = instructorParam ? Number(instructorParam) : undefined;
+  const parsedInstructorId = Number(instructorParam);
+  const instructorId =
+    Number.isSafeInteger(parsedInstructorId) && parsedInstructorId > 0
+      ? parsedInstructorId
+      : undefined;
 
   const summary = getAdminAnalyticsSummary({ period });
   const timeSeries = getAdminRevenueTimeSeries({ period });
   const courseBreakdown = getAdminPerCourseBreakdown({
     period,
-    instructorId:
-      instructorId && !Number.isNaN(instructorId) ? instructorId : undefined,
+    instructorId,
   });
   const instructors = getInstructorsWithCourses();
 
@@ -373,179 +376,175 @@ export default function AdminAnalytics({ loaderData }: Route.ComponentProps) {
                 )}
               </CardContent>
             </Card>
-
-            {/* Per-Course Breakdown Table */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Per-Course Breakdown</CardTitle>
-                {instructors.length > 1 && (
-                  <Select
-                    value={
-                      selectedInstructorId
-                        ? String(selectedInstructorId)
-                        : "all"
-                    }
-                    onValueChange={handleInstructorChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Instructors" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Instructors</SelectItem>
-                      {instructors.map((instructor) => (
-                        <SelectItem
-                          key={instructor.id}
-                          value={String(instructor.id)}
-                        >
-                          {instructor.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </CardHeader>
-              <CardContent>
-                {courseBreakdown.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b text-left">
-                          <th className="pb-3 pr-4 font-medium">
-                            <button
-                              onClick={() => handleSort("title")}
-                              className="inline-flex items-center hover:text-foreground"
-                            >
-                              Course
-                              <SortIcon
-                                field="title"
-                                sortField={sortField}
-                                sortDirection={sortDirection}
-                              />
-                            </button>
-                          </th>
-                          <th className="pb-3 pr-4 font-medium">
-                            <button
-                              onClick={() => handleSort("instructorName")}
-                              className="inline-flex items-center hover:text-foreground"
-                            >
-                              Instructor
-                              <SortIcon
-                                field="instructorName"
-                                sortField={sortField}
-                                sortDirection={sortDirection}
-                              />
-                            </button>
-                          </th>
-                          <th className="pb-3 pr-4 text-right font-medium">
-                            <button
-                              onClick={() => handleSort("listPrice")}
-                              className="inline-flex items-center hover:text-foreground"
-                            >
-                              List Price
-                              <SortIcon
-                                field="listPrice"
-                                sortField={sortField}
-                                sortDirection={sortDirection}
-                              />
-                            </button>
-                          </th>
-                          <th className="pb-3 pr-4 text-right font-medium">
-                            <button
-                              onClick={() => handleSort("revenue")}
-                              className="inline-flex items-center hover:text-foreground"
-                            >
-                              Revenue
-                              <SortIcon
-                                field="revenue"
-                                sortField={sortField}
-                                sortDirection={sortDirection}
-                              />
-                            </button>
-                          </th>
-                          <th className="pb-3 pr-4 text-right font-medium">
-                            <button
-                              onClick={() => handleSort("salesCount")}
-                              className="inline-flex items-center hover:text-foreground"
-                            >
-                              Sales
-                              <SortIcon
-                                field="salesCount"
-                                sortField={sortField}
-                                sortDirection={sortDirection}
-                              />
-                            </button>
-                          </th>
-                          <th className="pb-3 pr-4 text-right font-medium">
-                            <button
-                              onClick={() => handleSort("enrollmentCount")}
-                              className="inline-flex items-center hover:text-foreground"
-                            >
-                              Enrollments
-                              <SortIcon
-                                field="enrollmentCount"
-                                sortField={sortField}
-                                sortDirection={sortDirection}
-                              />
-                            </button>
-                          </th>
-                          <th className="pb-3 text-right font-medium">
-                            <button
-                              onClick={() => handleSort("averageRating")}
-                              className="inline-flex items-center hover:text-foreground"
-                            >
-                              Avg Rating
-                              <SortIcon
-                                field="averageRating"
-                                sortField={sortField}
-                                sortDirection={sortDirection}
-                              />
-                            </button>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sortedCourses.map((course) => (
-                          <tr
-                            key={course.courseId}
-                            className="border-b last:border-0"
-                          >
-                            <td className="py-3 pr-4 font-medium">
-                              {course.title}
-                            </td>
-                            <td className="py-3 pr-4">
-                              {course.instructorName}
-                            </td>
-                            <td className="py-3 pr-4 text-right">
-                              {formatPrice(course.listPrice)}
-                            </td>
-                            <td className="py-3 pr-4 text-right">
-                              {formatPrice(course.revenue)}
-                            </td>
-                            <td className="py-3 pr-4 text-right">
-                              {course.salesCount.toLocaleString()}
-                            </td>
-                            <td className="py-3 pr-4 text-right">
-                              {course.enrollmentCount.toLocaleString()}
-                            </td>
-                            <td className="py-3 text-right">
-                              {course.averageRating !== null
-                                ? course.averageRating.toFixed(1)
-                                : "N/A"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="py-8 text-center text-muted-foreground">
-                    No courses found for this instructor.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </>
         )}
+
+        {/* Per-Course Breakdown Table */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Per-Course Breakdown</CardTitle>
+            {instructors.length > 0 && (
+              <Select
+                value={
+                  selectedInstructorId ? String(selectedInstructorId) : "all"
+                }
+                onValueChange={handleInstructorChange}
+              >
+                <SelectTrigger aria-label="Filter courses by instructor">
+                  <SelectValue placeholder="All Instructors" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Instructors</SelectItem>
+                  {instructors.map((instructor) => (
+                    <SelectItem
+                      key={instructor.id}
+                      value={String(instructor.id)}
+                    >
+                      {instructor.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </CardHeader>
+          <CardContent>
+            {courseBreakdown.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left">
+                      <th className="pb-3 pr-4 font-medium">
+                        <button
+                          onClick={() => handleSort("title")}
+                          className="inline-flex items-center hover:text-foreground"
+                        >
+                          Course
+                          <SortIcon
+                            field="title"
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                          />
+                        </button>
+                      </th>
+                      <th className="pb-3 pr-4 font-medium">
+                        <button
+                          onClick={() => handleSort("instructorName")}
+                          className="inline-flex items-center hover:text-foreground"
+                        >
+                          Instructor
+                          <SortIcon
+                            field="instructorName"
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                          />
+                        </button>
+                      </th>
+                      <th className="pb-3 pr-4 text-right font-medium">
+                        <button
+                          onClick={() => handleSort("listPrice")}
+                          className="inline-flex items-center hover:text-foreground"
+                        >
+                          List Price
+                          <SortIcon
+                            field="listPrice"
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                          />
+                        </button>
+                      </th>
+                      <th className="pb-3 pr-4 text-right font-medium">
+                        <button
+                          onClick={() => handleSort("revenue")}
+                          className="inline-flex items-center hover:text-foreground"
+                        >
+                          Revenue
+                          <SortIcon
+                            field="revenue"
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                          />
+                        </button>
+                      </th>
+                      <th className="pb-3 pr-4 text-right font-medium">
+                        <button
+                          onClick={() => handleSort("salesCount")}
+                          className="inline-flex items-center hover:text-foreground"
+                        >
+                          Sales
+                          <SortIcon
+                            field="salesCount"
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                          />
+                        </button>
+                      </th>
+                      <th className="pb-3 pr-4 text-right font-medium">
+                        <button
+                          onClick={() => handleSort("enrollmentCount")}
+                          className="inline-flex items-center hover:text-foreground"
+                        >
+                          Enrollments
+                          <SortIcon
+                            field="enrollmentCount"
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                          />
+                        </button>
+                      </th>
+                      <th className="pb-3 text-right font-medium">
+                        <button
+                          onClick={() => handleSort("averageRating")}
+                          className="inline-flex items-center hover:text-foreground"
+                        >
+                          Avg Rating
+                          <SortIcon
+                            field="averageRating"
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                          />
+                        </button>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedCourses.map((course) => (
+                      <tr
+                        key={course.courseId}
+                        className="border-b last:border-0"
+                      >
+                        <td className="py-3 pr-4 font-medium">
+                          {course.title}
+                        </td>
+                        <td className="py-3 pr-4">{course.instructorName}</td>
+                        <td className="py-3 pr-4 text-right">
+                          {formatPrice(course.listPrice)}
+                        </td>
+                        <td className="py-3 pr-4 text-right">
+                          {formatPrice(course.revenue)}
+                        </td>
+                        <td className="py-3 pr-4 text-right">
+                          {course.salesCount.toLocaleString()}
+                        </td>
+                        <td className="py-3 pr-4 text-right">
+                          {course.enrollmentCount.toLocaleString()}
+                        </td>
+                        <td className="py-3 text-right">
+                          {course.averageRating !== null
+                            ? course.averageRating.toFixed(1)
+                            : "N/A"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="py-8 text-center text-muted-foreground">
+                No courses found for this instructor.
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

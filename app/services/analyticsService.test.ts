@@ -1276,6 +1276,54 @@ describe("analyticsService", () => {
       expect(result[0].salesCount).toBe(1);
     });
 
+    it.each(["7d", "30d", "12m", "all"] as const)(
+      "includes inactive courses and scopes enrollment counts for %s",
+      (period) => {
+        const recent = new Date(Date.now() - 86400000).toISOString();
+        const old = new Date();
+        old.setFullYear(old.getFullYear() - 2);
+        testDb
+          .insert(schema.enrollments)
+          .values([
+            {
+              userId: base.user.id,
+              courseId: base.course.id,
+              enrolledAt: recent,
+            },
+            {
+              userId: base.instructor.id,
+              courseId: base.course.id,
+              enrolledAt: old.toISOString(),
+            },
+          ])
+          .run();
+
+        const result = getAdminPerCourseBreakdown({
+          period,
+          instructorId: base.instructor.id,
+        });
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({
+          courseId: base.course.id,
+          instructorName: base.instructor.name,
+          listPrice: base.course.price,
+          revenue: 0,
+          salesCount: 0,
+          enrollmentCount: period === "all" ? 2 : 1,
+          averageRating: null,
+        });
+      }
+    );
+
+    it("returns no courses for an instructor without courses", () => {
+      expect(
+        getAdminPerCourseBreakdown({
+          period: "all",
+          instructorId: base.user.id,
+        })
+      ).toEqual([]);
+    });
+
     it("includes enrollment counts and ratings", () => {
       testDb
         .insert(schema.enrollments)

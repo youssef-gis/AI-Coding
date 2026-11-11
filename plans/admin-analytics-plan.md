@@ -67,11 +67,11 @@ Add a per-course breakdown table below the chart. The table includes columns: Co
 
 ### Acceptance criteria
 
-- [ ] Table displays all courses with columns: Title, Instructor, List Price, Revenue, Sales, Enrollments, Rating
-- [ ] Instructor dropdown is populated with instructors who have at least one course
-- [ ] Default filter is "All Instructors" showing every course
-- [ ] Selecting an instructor filters the table to only their courses
-- [ ] Filtering is applied server-side in the loader
-- [ ] Table data respects the selected time period
-- [ ] Revenue and list price columns are formatted as currency
-- [ ] Analytics service has tests for the per-course breakdown with optional instructor filter
+- [x] Table displays all courses with columns: Title, Instructor, List Price, Revenue, Sales, Enrollments, Rating
+- [x] Instructor dropdown is populated with instructors who have at least one course
+- [x] Default filter is "All Instructors" showing every course
+- [x] Selecting an instructor filters the table to only their courses
+- [x] Filtering is applied server-side in the loader
+- [x] Table data respects the selected time period
+- [x] Revenue and list price columns are formatted as currency
+- [x] Analytics service has tests for the per-course breakdown with optional instructor filter
