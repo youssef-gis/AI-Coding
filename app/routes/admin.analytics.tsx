@@ -54,7 +54,7 @@ function formatChartRevenue(cents: number): string {
 }
 
 function formatTooltipRevenue(cents: number): string {
-  return formatPrice(cents);
+  return cents === 0 ? "$0" : formatPrice(cents);
 }
 
 const VALID_PERIODS: TimePeriod[] = ["7d", "30d", "12m", "all"];

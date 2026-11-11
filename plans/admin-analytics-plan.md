@@ -47,13 +47,13 @@ Add a revenue-over-time line chart below the summary cards. The chart shows a si
 
 ### Acceptance criteria
 
-- [ ] Line chart displays combined revenue over time for the selected period
-- [ ] Chart uses daily granularity for 7d and 30d periods
-- [ ] Chart uses monthly granularity for 12m and all periods
-- [ ] Zero-revenue days/months appear as $0 data points
-- [ ] Revenue axis labels are formatted as currency
-- [ ] Chart updates when the time period tab is changed
-- [ ] Analytics service has tests for the time series aggregation function
+- [x] Line chart displays combined revenue over time for the selected period
+- [x] Chart uses daily granularity for 7d and 30d periods
+- [x] Chart uses monthly granularity for 12m and all periods
+- [x] Zero-revenue days/months appear as $0 data points
+- [x] Revenue axis labels are formatted as currency
+- [x] Chart updates when the time period tab is changed
+- [x] Analytics service has tests for the time series aggregation function
 
 ---
 

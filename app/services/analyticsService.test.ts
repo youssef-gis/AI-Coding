@@ -1383,6 +1383,77 @@ describe("analyticsService", () => {
   // ─── Admin Revenue Time Series ───
 
   describe("getAdminRevenueTimeSeries", () => {
+    it.each<TimePeriod>(["7d", "30d", "12m", "all"])(
+      "includes only selected revenue and fills gaps for %s",
+      (period) => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date("2026-06-15T12:00:00.000Z"));
+        try {
+          testDb
+            .insert(schema.purchases)
+            .values([
+              {
+                userId: base.user.id,
+                courseId: base.course.id,
+                pricePaid: 1000,
+                country: "US",
+                createdAt: "2024-03-10T12:00:00.000Z",
+              },
+              {
+                userId: base.user.id,
+                courseId: base.course.id,
+                pricePaid: 2500,
+                country: "US",
+                createdAt: "2026-06-14T12:00:00.000Z",
+              },
+            ])
+            .run();
+
+          const result = getAdminRevenueTimeSeries({ period });
+          const daily = period === "7d" || period === "30d";
+          expect(result).toHaveLength(
+            period === "7d"
+              ? 8
+              : period === "30d"
+                ? 31
+                : period === "12m"
+                  ? 13
+                  : 28
+          );
+          expect(result.at(-1)?.date).toBe(daily ? "2026-06-15" : "2026-06");
+          expect(
+            result.every((point) =>
+              daily
+                ? /^\d{4}-\d{2}-\d{2}$/.test(point.date)
+                : /^\d{4}-\d{2}$/.test(point.date)
+            )
+          ).toBe(true);
+          expect(result.reduce((sum, point) => sum + point.revenue, 0)).toBe(
+            period === "all" ? 3500 : 2500
+          );
+          expect(
+            result.find(
+              (point) => point.date === (daily ? "2026-06-14" : "2026-06")
+            )?.revenue
+          ).toBe(2500);
+          expect(result.filter((point) => point.revenue === 0)).toHaveLength(
+            result.length - (period === "all" ? 2 : 1)
+          );
+        } finally {
+          vi.useRealTimers();
+        }
+      }
+    );
+
+    it.each<TimePeriod>(["7d", "30d", "12m"])(
+      "returns a zero-filled series without purchases for %s",
+      (period) => {
+        const result = getAdminRevenueTimeSeries({ period });
+        expect(result.length).toBeGreaterThan(0);
+        expect(result.every((point) => point.revenue === 0)).toBe(true);
+      }
+    );
+
     it("returns empty array when no purchases exist for all period", () => {
       const result = getAdminRevenueTimeSeries({ period: "all" });
       expect(result).toEqual([]);
