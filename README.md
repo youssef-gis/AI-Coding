@@ -36,6 +36,38 @@ pnpm dev
 
 The app will be running at `http://localhost:5173`.
 
+## Running Sandcastle
+
+From the repository root, pass a PRD and its implementation plan:
+
+```bash
+pnpm sandcastle:run ./prd/admin-analytics.md ./plans/admin-analytics-plan.md
+```
+
+Alternatively, use `npx tsx .sandcastle/main.ts ./prd/admin-analytics.md ./plans/admin-analytics-plan.md`.
+The TypeScript file must be run through `tsx`; `npx .sandcastle/main.ts` treats it as an npm package and fails with `ENOTDIR`.
+
+With both files supplied, the agent works on one incomplete plan phase per iteration, for up to three iterations. Running `pnpm sandcastle:run` without arguments uses the GitHub issues prompt in `.sandcastle/prompt.md` instead. Docker and the configured agent credentials are required.
+
+Build the Docker image from the repository root:
+
+```bash
+pnpm sandcastle docker build-image
+```
+
+The `sandcastle:run` script runs the agent; `pnpm sandcastle` invokes the installed Sandcastle CLI. Keep these names distinct so CLI commands reach Sandcastle.
+
+Codex runs use your ChatGPT subscription login, including the Codex allowance available with Plus. Sign in with the same account you use for your subscription:
+
+```bash
+codex -c 'cli_auth_credentials_store="file"' login
+codex login status
+```
+
+Sandcastle reads `${CODEX_HOME:-~/.codex}/auth.json`, mounts only that credential file read-only, and copies it into the container for Codex to use and refresh. API keys in `.sandcastle/.env` are disabled for these runs. Credentials stay outside the repository and Docker image. If the login expires, sign in on the host again before retrying. Refreshed container credentials are discarded when the container is removed.
+
+Run output, including Codex JSON errors, is saved to `.sandcastle/logs/dev.log`. If a run exits with `Reading prompt from stdin...`, inspect the JSON error earlier in that log. Subscription usage is subject to your account's Codex limits. After changing the Dockerfile, rebuild the image with the command above before running again.
+
 ## Scripts
 
 | Command                     | Description                            |

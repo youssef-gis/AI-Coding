@@ -4,6 +4,7 @@
   "description": "An awesome course platform",
   "type": "module",
   "scripts": {
+    "sandcastle:run": "tsx .sandcastle/main.ts",
     "cherry-pick": "ai-hero-cli cherry-pick --branch=live-run-through --upstream=https://github.com/ai-hero-dev/cohort-004-project.git",
     "reset": "ai-hero-cli reset --branch=live-run-through --upstream=https://github.com/ai-hero-dev/cohort-004-project.git",
     "pull": "ai-hero-cli pull --upstream=https://github.com/ai-hero-dev/cohort-004-project.git",
