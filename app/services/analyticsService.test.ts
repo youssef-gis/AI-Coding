@@ -1045,6 +1045,94 @@ describe("analyticsService", () => {
     });
   });
 
+  describe("admin summary period boundaries", () => {
+    it.each<TimePeriod>(["7d", "30d", "12m", "all"])(
+      "filters revenue, enrollments, and the top course together for %s",
+      (period) => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date("2026-06-15T12:00:00.000Z"));
+        try {
+          const oldCourse = testDb
+            .insert(schema.courses)
+            .values({
+              title: "Old best seller",
+              slug: "old-best-seller",
+              description: "Historical sales",
+              instructorId: base.instructor.id,
+              categoryId: base.category.id,
+              status: schema.CourseStatus.Published,
+              price: 10000,
+            })
+            .returning()
+            .get();
+          testDb
+            .insert(schema.purchases)
+            .values([
+              {
+                userId: base.user.id,
+                courseId: base.course.id,
+                pricePaid: 2000,
+                country: "US",
+                createdAt: "2026-06-14T12:00:00.000Z",
+              },
+              {
+                userId: base.user.id,
+                courseId: oldCourse.id,
+                pricePaid: 10000,
+                country: "US",
+                createdAt: "2024-01-01T12:00:00.000Z",
+              },
+            ])
+            .run();
+          testDb
+            .insert(schema.enrollments)
+            .values([
+              {
+                userId: base.user.id,
+                courseId: base.course.id,
+                enrolledAt: "2026-06-14T12:00:00.000Z",
+              },
+              {
+                userId: base.user.id,
+                courseId: oldCourse.id,
+                enrolledAt: "2024-01-01T12:00:00.000Z",
+              },
+            ])
+            .run();
+
+          expect(getAdminAnalyticsSummary({ period })).toEqual({
+            totalRevenue: period === "all" ? 12000 : 2000,
+            totalEnrollments: period === "all" ? 2 : 1,
+            topEarningCourse:
+              period === "all"
+                ? { title: oldCourse.title, revenue: 10000 }
+                : { title: base.course.title, revenue: 2000 },
+          });
+        } finally {
+          vi.useRealTimers();
+        }
+      }
+    );
+
+    it("distinguishes a zero-dollar purchase from no purchase data", () => {
+      testDb
+        .insert(schema.purchases)
+        .values({
+          userId: base.user.id,
+          courseId: base.course.id,
+          pricePaid: 0,
+          country: "US",
+        })
+        .run();
+
+      expect(getAdminAnalyticsSummary({ period: "all" })).toEqual({
+        totalRevenue: 0,
+        totalEnrollments: 0,
+        topEarningCourse: { title: base.course.title, revenue: 0 },
+      });
+    });
+  });
+
   // ─── Admin Per-Course Breakdown ───
 
   describe("getAdminPerCourseBreakdown", () => {

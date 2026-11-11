@@ -208,7 +208,8 @@ export default function AdminAnalytics({ loaderData }: Route.ComponentProps) {
       : (bVal as number) - (aVal as number);
   });
 
-  const hasData = summary.totalRevenue > 0 || summary.totalEnrollments > 0;
+  const hasData =
+    summary.topEarningCourse !== null || summary.totalEnrollments > 0;
 
   return (
     <div className="mx-auto max-w-7xl p-6 lg:p-8">
@@ -234,6 +235,7 @@ export default function AdminAnalytics({ loaderData }: Route.ComponentProps) {
             <button
               key={p.value}
               onClick={() => handlePeriodChange(p.value)}
+              aria-pressed={period === p.value}
               className={cn(
                 "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                 period === p.value

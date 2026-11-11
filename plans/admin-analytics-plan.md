@@ -26,14 +26,14 @@ Wire up the `/admin/analytics` route with admin-only access. Add an "Analytics" 
 
 ### Acceptance criteria
 
-- [ ] `/admin/analytics` route exists and returns 403 for non-admin users
-- [ ] Admin sidebar includes an "Analytics" link that navigates to the dashboard
-- [ ] Summary card shows total revenue across all courses for the selected time period
-- [ ] Summary card shows total enrollments across all courses for the selected time period
-- [ ] Summary card shows the top earning course name and its revenue for the selected time period
-- [ ] Time period tabs (7d, 30d, 12m, all) are present and update the summary cards
-- [ ] Empty state is shown when there is no data
-- [ ] Analytics service has tests for the new aggregation functions
+- [x] `/admin/analytics` route exists and returns 403 for non-admin users
+- [x] Admin sidebar includes an "Analytics" link that navigates to the dashboard
+- [x] Summary card shows total revenue across all courses for the selected time period
+- [x] Summary card shows total enrollments across all courses for the selected time period
+- [x] Summary card shows the top earning course name and its revenue for the selected time period
+- [x] Time period tabs (7d, 30d, 12m, all) are present and update the summary cards
+- [x] Empty state is shown when there is no data
+- [x] Analytics service has tests for the new aggregation functions
 
 ---
 
